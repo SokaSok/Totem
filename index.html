@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Totem Studenti</title>
+    <link rel="stylesheet" href="./totem_style.css" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header></header>
+    <div class="wrapper" data-slider>
+      <div class="centrale"></div>
+      <div class="laterale"></div>
+      <div class="inferiore"></div>
+    </div>
+    <footer></footer>
+
+    <template id="bar">
+      <div class="progress">
+        <span></span>
+      </div>
+    </template>
+    <script src="./script.js"></script>
+    <script src="./animazioni.js"></script>
+    <script src="./contenuto.js"></script>
+    <script>
+      const info_url =
+        "https://script.google.com/macros/s/AKfycbydkqYN18AbRzSu_gThCy6jx7HVrvVx82BduCGqwbhmNBUJoCzEl5TjiGdB-2NDhuetSw/exec";
+
+      let contenuti = [];
+      let inizio = true;
+
+      const modulo_tabelle = 9;
+      const intervallo_tabelle = 8000;
+
+      const intervallo_aggiornamento = 60 * 1000;
+      const intervallo_post = 5 * 60 * 1000;
+      const limite_aggiornamento = 10 * 60 * 1000;
+      const max_richieste = 100;
+      let num_richieste = 0;
+      let ore_orario = [];
+
+      window.onload = (e) => {
+        aggiornaOrologio();
+        inizializza();
+        setInterval(inizializza, intervallo_post);
+      };
+
+      function inizializza() {
+        if (num_richieste >= max_richieste) return;
+
+        let funzOK = (resp) => {
+          num_richieste = 0;
+          console.log(resp);
+          if (!resp.error) {
+            ore_orario = resp.ore_orario;
+            resp.contenuti.forEach((el) => Contenuto.aggiungi_contenuto(el));
+            if (inizio) {
+              Contenuto.avvia_loop();
+              inizio = false;
+            }
+          } else {
+            console.log(resp.message);
+          }
+        };
+        const rifGiorno = new Date();
+        let funzKO = (ex) => {
+          num_richieste++;
+          if (ex) console.log(ex);
+          post(
+            info_url,
+            [
+              ["cmd", "caricaTotem"],
+              ["giorno", rifGiorno],
+              ["destinazione", "studenti"],
+            ],
+            (resp) => {
+              funzOK(resp);
+            },
+            console.log,
+            undefined,
+            !inizio,
+          );
+        };
+        num_richieste++;
+        load(
+          "totem_getContenuti",
+          [rifGiorno.getTime(), "studenti"],
+          undefined,
+          !inizio,
+        )
+          .then(funzOK)
+          .catch((ex) => {
+            funzKO(ex, inizio);
+          });
+      }
+
+      function aggiornaOrologio() {
+        mostraOrologio(
+          new Date(),
+          document.querySelector(".wrapper"),
+          ore_orario,
+        );
+        setInterval((_) => {
+          mostraOrologio(
+            new Date(),
+            document.querySelector(".wrapper"),
+            ore_orario,
+          );
+        }, 1000);
+      }
+
+      function differenzaDate(dt1, dt2) {
+        if (!dt1) dt1 = new Date(0, 0, 0);
+        if (!dt2) dt2 = new Date(0, 0, 0);
+        if (typeof dt1 == "string") dt1 = new Date(dt1);
+        if (typeof dt2 == "string") dt2 = new Date(dt2);
+        return dt1.getTime() - dt2.getTime();
+      }
+    </script>
+  </body>
+</html>
