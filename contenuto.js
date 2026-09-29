@@ -69,7 +69,7 @@ class Contenuto {
         };
 
         this.contenitore = document.querySelector(`.${contenitore}`);
-        this.durata_slides = durata_slides;
+        this.durata_slides = durata_slides ? parseInt(durata_slides) : undefined;
         this.id = id;
         this.iframe = iframe;
         this.link = link;
@@ -388,19 +388,29 @@ class Contenuto {
 
         const maxTr = this.maxTr;
         const slides = Math.ceil(this.rows.length / maxTr);
+        // if (!this.durata_slides) {
+        //     this.durata_slides = Math.max(Math.ceil(this.comparsa.durata / slides), intervallo_slides);
+        // }
+
         if (!this.durata_slides) {
-            this.durata_slides = Math.max(Math.ceil(this.comparsa.durata / slides), intervallo_slides);
-        }
-        if (this.comparsa.durata < this.durata_slides * slides) {
-            this.comparsa.durata = this.durata_slides * slides;
+            this.durata_slides = intervallo_slides; // Default a 10.000 (10 sec)
         }
 
-        if (this.inizio_slide && differenzaDate(now, this.inizio_slide) < this.durata_slides)
+        // if (this.comparsa.durata < this.durata_slides * slides) {
+        //     this.comparsa.durata = this.durata_slides * slides;
+        // }
+
+        // 1. CONTROLLO TEMPO: Se non è ancora passato il tempo necessario, esci e aggiorna solo la barra
+        if (this.inizio_slide && differenzaDate(now, this.inizio_slide) < this.durata_slides) {
+            Anima.anteprimaScorrimento(this.tabella.querySelector('thead .progress'), this.inizio_slide, this.durata_slides);
             return;
+        }
 
+        // 2. NUOVA PAGINA: Azzera il tempo per la nuova pagina
         this.inizio_slide = now;
+        Anima.anteprimaScorrimento(this.tabella.querySelector('thead .progress'), this.inizio_slide, this.durata_slides);
 
-        if (this.index < (this.rows / maxTr)) this.index = 0;
+        //if (this.index < (this.rows / maxTr)) this.index = 0;
 
         const rows = (this.index + maxTr) < this.rows.length ?
             maxTr :
@@ -416,11 +426,13 @@ class Contenuto {
             tbody.appendChild(tr);
 
             const aggiornamento = this.rows[i].update;
-            if (aggiornamento && new Date(new Date(aggiornamento).getTime() + limite_aggiornamento) >= new Date()) { tr.classList.add('nuovo'); }
+            let limite = typeof limite_aggiornamento !== 'undefined' ? limite_aggiornamento : 600000;
+            if (aggiornamento && new Date(new Date(aggiornamento).getTime() + limite) >= new Date()) { tr.classList.add('nuovo'); }
             else if (tr.classList.contains('nuovo')) tr.classList.remove('nuovo');
         }
 
-        this.index += (maxTr - 1);
+        //this.index += (maxTr - 1);
+        this.index += maxTr;
         if (this.index >= this.rows.length) this.index = 0;
     }
 
@@ -479,6 +491,8 @@ class Contenuto {
 
         if (nascondi) options.direction = 'reverse';
         else options.delay = 300;
+
+        this.sezione.getAnimations().forEach(a => a.cancel());
 
         if (!nascondi) this.sezione.animate(animazione, options);
 

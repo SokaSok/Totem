@@ -34,6 +34,7 @@ class Anima {
     static img(element, delay, reverse) {
         const img = element.querySelector('.immagine');
         if (img) {
+            img.getAnimations().forEach(a => a.cancel());
             img.animate({
                 transform: ['scaleX(0)', 'scaleX(1.2)', 'scaleX(1)'],
                 opacity: [0, 1]
@@ -51,6 +52,7 @@ class Anima {
         const img = element.querySelector('.qr');
         if (img) {
             img.style.width = 'rotate3d(1, 1, 0, 90deg)';
+            img.getAnimations().forEach(a => a.cancel());
             img.animate({
                 transform: ['rotate3d(1, 1, 0, 90deg)', 'rotate3d(1, 1, 0, 0deg)']
             }, {
@@ -66,6 +68,7 @@ class Anima {
     static testo(element, reverse) {
         const dida = element.querySelector('.testo');
         if (dida) {
+            dida.getAnimations().forEach(a => a.cancel());
             dida.animate({
                 bottom: ['-100%', '10px'],
                 opacity: [0, 1]
