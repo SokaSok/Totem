@@ -76,6 +76,12 @@ class Contenuto {
         this.tipo = tipo;
         this.titolo = titolo;
 
+        // Se l'elemento DOM (sezione) è già presente, aggiorna subito l'H2
+        if (this.sezione) {
+            let h2 = this.sezione.querySelector('h2');
+            if (h2) h2.innerHTML = this.titolo;
+        }
+
         this.img = img;
         this.testo = testo;
         this.properties = properties;
@@ -410,7 +416,8 @@ class Contenuto {
         this.inizio_slide = now;
         Anima.anteprimaScorrimento(this.tabella.querySelector('thead .progress'), this.inizio_slide, this.durata_slides);
 
-        //if (this.index < (this.rows / maxTr)) this.index = 0;
+        // Controllo di sicurezza, previene bug nel rendering se le righe sono diminuite
+        if (this.index >= this.rows.length) this.index = 0;
 
         const rows = (this.index + maxTr) < this.rows.length ?
             maxTr :
@@ -519,7 +526,7 @@ class Contenuto {
             [...this.contenitore.querySelectorAll('.sezione')]
                 .map(s => Contenuto.contenuti.filter(c => c.sezione == s)[0])
                 .forEach(s => {
-                    if (s.sezione.classList.contains('show') && s.sezione != this.sezione) {
+                    if (s && s.sezione.classList.contains('show') && s.sezione != this.sezione) {
                         da_nascondere.push(s);
                     } else if (!s.sezione.classList.contains('show') && s.sezione == this.sezione) {
                         da_mostrare = s;
@@ -652,7 +659,10 @@ class Contenuto {
                 contenitore.index = visualizzandi[0].id;
             }
 
-            if (contenitore.index == -1) contenitore.index = visualizzandi[0].id;
+            // Se l'indice non c'è, oppure punta a un ID cancellato, resetta al primo ID disponibile
+            if (contenitore.index == -1 || !Contenuto.contenuti.some(cc => cc.id == contenitore.index)) {
+                contenitore.index = visualizzandi[0].id;
+            }
 
             //for (let i = 0; i < visualizzandi.length; i++) {
             const c = Contenuto.contenuti.filter(cc => cc.id == contenitore.index)[0];

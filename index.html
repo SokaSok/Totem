@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Totem Studenti</title>
-    <link rel="stylesheet" href="./totem_style.css" />
+    <link rel="stylesheet" href="../totem_style.css" />
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
@@ -24,9 +24,9 @@
         <span></span>
       </div>
     </template>
-    <script src="./script.js"></script>
-    <script src="./animazioni.js"></script>
-    <script src="./contenuto.js"></script>
+    <script src="../script.js"></script>
+    <script src="../animazioni.js"></script>
+    <script src="../contenuto.js"></script>
     <script>
       const info_url =
         "https://script.google.com/macros/s/AKfycbydkqYN18AbRzSu_gThCy6jx7HVrvVx82BduCGqwbhmNBUJoCzEl5TjiGdB-2NDhuetSw/exec";
@@ -58,6 +58,18 @@
           console.log(resp);
           if (!resp.error) {
             ore_orario = resp.ore_orario;
+
+            // Pulizia contenuti non più ritornati dal server
+            const nuoviId = resp.contenuti.map((c) => c.id);
+            Contenuto.contenuti = Contenuto.contenuti.filter((c) => {
+              if (nuoviId.includes(c.id)) {
+                return true;
+              } else {
+                if (c.sezione) c.sezione.remove();
+                return false;
+              }
+            });
+
             resp.contenuti.forEach((el) => Contenuto.aggiungi_contenuto(el));
             if (inizio) {
               Contenuto.avvia_loop();
