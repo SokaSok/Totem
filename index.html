@@ -48,6 +48,8 @@
         aggiornaOrologio();
         inizializza();
         setInterval(inizializza, intervallo_post);
+
+        programmaRefreshMezzanotte();
       };
 
       function inizializza() {
@@ -109,6 +111,25 @@
           .catch((ex) => {
             funzKO(ex, inizio);
           });
+      }
+
+      function programmaRefreshMezzanotte() {
+        const ora = new Date();
+        // Calcola la data e l'ora della prossima mezzanotte (aggiungendo 1 secondo per sicurezza)
+        const mezzanotte = new Date(
+          ora.getFullYear(),
+          ora.getMonth(),
+          ora.getDate() + 1,
+          0,
+          0,
+          1,
+        );
+        const attesa = mezzanotte.getTime() - ora.getTime();
+
+        setTimeout(() => {
+          // Forza il ricaricamento completo della pagina
+          window.location.reload();
+        }, attesa);
       }
 
       function aggiornaOrologio() {
